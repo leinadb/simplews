@@ -1,10 +1,10 @@
 package com.example.simplews;
 
-import com.example.simplews.dao.SomethingModelService;
+import com.example.simplews.dao.SomethingModelDaoService;
+import com.example.simplews.dao.SomethingModelRepository;
 import com.example.simplews.exceptions.ModelNotFoundException;
 import com.example.simplews.model.SomethingModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
-import javax.xml.ws.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +25,8 @@ import java.util.Optional;
 public class SomethingResource {
 
     @Autowired
-    private SomethingModelService modelService;
+    private SomethingModelRepository modelService;
+
 
     @GetMapping(path = "/models")
     public List<SomethingModel> getAllModels() {
@@ -39,7 +35,7 @@ public class SomethingResource {
 
     @GetMapping(path = "/models/{id}")
     public Resource<SomethingModel> getSomethingModel(@PathVariable String id) {
-        Optional<SomethingModel> model = modelService.findOne(id);
+        Optional<SomethingModel> model = modelService.findById(id);
         if (!model.isPresent()) {
             throw new ModelNotFoundException(String.format("no model with id %s", id));
         }
@@ -74,10 +70,7 @@ public class SomethingResource {
 
     @DeleteMapping(path = "/models/{id}")
     public ResponseEntity<Object> deleteSomethingModel(@PathVariable String id) {
-        SomethingModel newModel = modelService.delete(id);
-        if (newModel == null) {
-            throw new ModelNotFoundException("no model with given idd");
-        }
+        modelService.deleteById(id);
         return ResponseEntity.ok("Deleted successfully");
     }
 }
