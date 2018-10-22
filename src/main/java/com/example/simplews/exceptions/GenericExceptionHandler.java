@@ -17,7 +17,7 @@ import java.util.Date;
 public class GenericExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ModelNotFoundException.class)
-    public final ResponseEntity<Object> handleAllExceptions(ModelNotFoundException exception, WebRequest request) {
+    public final ResponseEntity<Object> handleNotFoundExceptions(ModelNotFoundException exception, WebRequest request) {
         return new ResponseEntity(new ExceptionResponse("Better call Saul. " + exception.getMessage(), new Date()),
                 HttpStatus.NOT_FOUND);
     }

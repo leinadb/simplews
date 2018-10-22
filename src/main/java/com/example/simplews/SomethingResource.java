@@ -1,8 +1,10 @@
 package com.example.simplews;
 
+import com.example.simplews.dao.SomeRepository;
 import com.example.simplews.dao.SomethingModelDaoService;
 import com.example.simplews.dao.SomethingModelRepository;
 import com.example.simplews.exceptions.ModelNotFoundException;
+import com.example.simplews.model.Some;
 import com.example.simplews.model.SomethingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -26,6 +28,8 @@ public class SomethingResource {
 
     @Autowired
     private SomethingModelRepository modelService;
+    @Autowired
+    private SomeRepository someService;
 
 
     @GetMapping(path = "/models")
@@ -72,5 +76,35 @@ public class SomethingResource {
     public ResponseEntity<Object> deleteSomethingModel(@PathVariable String id) {
         modelService.deleteById(id);
         return ResponseEntity.ok("Deleted successfully");
+    }
+
+    @GetMapping(path = "/models/{id}/somes")
+    public List<Some> getSomethingModelSomes(@PathVariable String id) {
+        Optional<SomethingModel> model = modelService.findById(id);
+        if (!model.isPresent()) {
+            throw new ModelNotFoundException(String.format("no model with id %s", id));
+        }
+
+        return model.get().getSomeList();
+    }
+
+    @PostMapping(path = "/models/{id}/somes")
+    public ResponseEntity<Object> createSomethingModelSomes(@PathVariable String id, @RequestBody Some some) {
+        Optional<SomethingModel> model = modelService.findById(id);
+        if (!model.isPresent()) {
+            throw new ModelNotFoundException(String.format("no model with id %s", id));
+        }
+        SomethingModel somethingModel = model.get();
+
+        some.setModel(somethingModel);
+
+        someService.save(some);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(some.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).build();
     }
 }
